@@ -5,16 +5,18 @@ dotenv.config();
 const sendEmail = async (options) => {
     
   const transporter = nodemailer.createTransport({
-    host: "smtp-mail.outlook.com",
+    host: "smtp.office365.com",
+    port:587,
+    
 
     auth: {
-      user: process.env.EMAIL_USER, // ADMIN GMAIL ID
-      pass: process.env.EMAIL_PASS, // ADMIN GAMIL PASSWORD
+      user: process.env.EMAIL_USER || 'bansallakshay081@gmail.com', // ADMIN GMAIL ID
+      pass: process.env.EMAIL_PASS || 'BANIYAboy123', // ADMIN GAMIL PASSWORD
     },
   });
   console.log(transporter.options.auth);
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_USER || 'bansallakshay081@gmail.com',
     to: options.email,
     subject: options.subject,
     html: options.html,
