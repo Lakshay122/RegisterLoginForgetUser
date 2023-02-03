@@ -7,6 +7,6 @@ router.route("/user/registeruser").post(registerUser);
 router.route("/user/loginuser").post(loginUser);
 router.route("/user/sendemail").post(sendUserPasswordResetEmail);
 router.route("/user/verifyotp").post(VerifyOtp);
-router.route("/user/forgetpassword").post(resetPassword)
+router.route("/user/forgetpassword").patch(resetPassword)
 
 module.exports = router
