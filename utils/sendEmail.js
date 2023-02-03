@@ -1,20 +1,20 @@
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
-dotenv.config({ path: "../Config/config.env" });
+dotenv.config();
 
 const sendEmail = async (options) => {
-    console.log("user em n",process.env.EMAIL_USER)
+    
   const transporter = nodemailer.createTransport({
     host: "smtp-mail.outlook.com",
 
     auth: {
-      user: "bansallakshay081@gmail.com", // ADMIN GMAIL ID
-      pass: "BANIYAboy123", // ADMIN GAMIL PASSWORD
+      user: process.env.EMAIL_USER, // ADMIN GMAIL ID
+      pass: process.env.EMAIL_PASS, // ADMIN GAMIL PASSWORD
     },
   });
   console.log(transporter.options.auth);
   const mailOptions = {
-    from: "bansallakshay081@gmail.com",
+    from: process.env.EMAIL_USER,
     to: options.email,
     subject: options.subject,
     html: options.html,
