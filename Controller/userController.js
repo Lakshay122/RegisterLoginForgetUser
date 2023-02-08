@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const userOtpVerification = require("../models/userOtpVerification");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail")
+const jwt = require('jsonwebtoken');
 var emailRegex =
   /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 
@@ -26,11 +27,14 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
         400
       )
     );
-  const user = await User.create(req.body);
+    const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(password, salt);
+      req.body.password = hashPassword;
+  const user = await User.create(req.body)
   res.status(201).json({
     success: true,
     message: "User Register Successfuly",
-    user: user,
+   
   });
 });
 
@@ -41,14 +45,19 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
     return next(
       new ErrorHander("Email and Password is mandatory for login", 400)
     );
-
-  const user = await User.findOne({ email: email, password: password });
+   
+  const user = await User.findOne({ email: email }).select("+password");
   if (!user)
     return next(new ErrorHander("Email or Password is not valid", 400));
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch) return next(new ErrorHander("Email or Password is not valid",400))
+    const token = jwt.sign({ userID: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "5d",})
     
   res.status(200).json({
     success: true,
     message: "User login Successfully",
+    token:token
   });
 });
 
@@ -175,9 +184,10 @@ exports.resetPassword = catchAsyncError(async (req, res, next) => {
         .update(data)
         .digest("hex");
       if (newCalculatedHash === hashValue) {
-       
+        const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(password, salt);
         await User.findByIdAndUpdate(user._id, {
-          $set: { password: password },
+          $set: { password: hashPassword },
         });
 
         res.status(200).json({
@@ -196,3 +206,18 @@ exports.resetPassword = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHander("User doen not exists with this email", 400));
   }
 });
+
+
+//get the user
+exports.getUser = catchAsyncError(async(req,res,next) => {
+  const {id} = req.params;
+   const user = await User.findById(id);
+   if(!user){
+    return next(new ErrorHander("user doesn't exists with this id"));
+   }
+   res.status(200).json({
+    success:true,
+    user:user
+    
+   })
+})
