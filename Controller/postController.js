@@ -3,7 +3,7 @@ const Post  = require("../models/postModel");
 const fs = require("fs");
 const cloudinary = require("cloudinary");
 const ErrorHander = require("../utils/errorHander");
-
+const User = require("../models/userModel")
 //cloud setup for post upload
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -102,6 +102,9 @@ exports.myPost = catchAsyncError(async(req,res,next) => {
 
 //get the post of specific user
 exports.userPost = catchAsyncError(async(req,res,next) => {
+    
+  const user = await User.findById(req.params.id);
+  if(!user) return next(new ErrorHander("User Does'nt exists",404))
     const post  = await Post.find({user:req.params.id})
 
     res.status(200).json({success:true,post:post})
